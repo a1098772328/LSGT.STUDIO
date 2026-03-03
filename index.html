@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSGT.STUDIO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        @font-face {
+            font-family: 'Roboto-Medium';
+            src: url('font/Roboto-Medium.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Roboto-Bold';
+            src: url('font/Roboto-Bold.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: 'Roboto-Medium', Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: black;
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+        body.dark {
+            background-color: #282828;
+            color: white;
+        }
+        .theme-toggle {
+            display: none;
+        }
+
+        body.dark .sidebar {
+            border-right: 1px solid #444;
+            background-color: #282828;
+        }
+        body.dark .nav-link {
+            color: white;
+        }
+        body.dark .nav-right {
+            color: white;
+        }
+        body.dark .work-item {
+            border: 1px solid #444;
+        }
+        body.dark .modal {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        body.dark .close {
+            color: white;
+        }
+        body.dark .close:hover {
+            color: #ccc;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .sidebar {
+            width: 100%;
+            padding: 30px 40px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 100px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 1);
+            transition: background-color 0.3s ease, padding 0.3s ease, border-bottom 0.3s ease;
+        }
+        .nav-right,
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .sidebar.scrolled {
+            background-color: rgba(255, 255, 255, 0);
+            padding: 20px 40px;
+            border-bottom: 1px solid transparent;
+        }
+        .sidebar.scrolled .nav-right,
+        .sidebar.scrolled .nav-link {
+            color: white;
+        }
+
+        .nav-right {
+            font-size: 38px;
+            font-family: 'Roboto-Bold', 'Roboto-Medium', Arial, sans-serif;
+            margin-bottom: 0;
+            mix-blend-mode: normal;
+        }
+        .nav-left {
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: black;
+            font-size: 25px;
+            font-family: 'Roboto-Bold', 'Roboto-Medium', Arial, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            mix-blend-mode: normal;
+        }
+        .nav-link:hover {
+            transform: scale(1.1);
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: black;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        body.dark .nav-link::after {
+            background-color: white;
+        }
+        .main-content {
+            flex: 1;
+            margin-top: 100px;
+        }
+        .container {
+            width: 100%;
+            padding: 0;
+        }
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            padding: 0;
+        }
+        .work-item {
+            position: relative;
+            aspect-ratio: 3/4;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .works-grid.two-columns {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+            padding: 0;
+        }
+        .work-item.ratio-16-9 {
+            aspect-ratio: 16/9;
+            border: none;
+        }
+        @media (max-width: 768px) {
+            .works-grid.two-columns {
+                grid-template-columns: 1fr;
+                gap: 0;
+                padding: 0;
+            }
+            .work-item.ratio-16-9 {
+                border: none;
+            }
+        }
+        .work-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .work-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .work-item:hover .work-image,
+        .work-item:hover .work-video {
+            transform: scale(1.05);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+        .modal:not(.active) .modal-content {
+            transform: scale(0.8);
+        }
+        .modal-image {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+        }
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+        .play-pause-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.5);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .play-pause-icon.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #ccc;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 36px;
+            font-weight: 900;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+            z-index: 99;
+            text-align: center;
+            line-height: 60px;
+            padding: 0;
+        }
+        .back-to-top:hover {
+            background-color: #333;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .back-to-top:active {
+            transform: translateY(0) scale(0.95);
+        }
+        body.dark .back-to-top {
+            background-color: white;
+            color: black;
+        }
+        body.dark .back-to-top:hover {
+            background-color: #ccc;
+        }
+        /* 滑块样式 */
+        .scrollbar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 200px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            z-index: 98;
+            transition: background-color 0.3s ease;
+        }
+        body.dark .scrollbar {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .scrollbar-thumb {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        body.dark .scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        body.dark .scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        /* Contact Modal */
+        .contact-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .contact-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .contact-modal-content {
+            background-color: white;
+            color: black;
+            padding: 40px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        .contact-modal.active .contact-modal-content {
+            transform: scale(1);
+        }
+        .contact-modal-content p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .contact-modal-content .contact-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .contact-modal-content .contact-info {
+            margin-top: 30px;
+        }
+        .contact-modal-content .contact-info p {
+            margin-bottom: 10px;
+        }
+        body.dark .contact-modal-content {
+            background-color: #333;
+            color: white;
+        }
+        @media (max-width: 1200px) {
+            .works-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                padding: 20px 20px;
+                height: 90px;
+                align-items: center;
+            }
+            .sidebar.scrolled {
+                padding: 15px 20px;
+            }
+            body.dark .sidebar {
+                background-color: #282828;
+                border-bottom: 1px solid #444;
+            }
+            body.dark .sidebar.scrolled {
+                background-color: rgba(40, 40, 40, 0);
+                border-bottom: 1px solid transparent;
+            }
+            .sidebar.scrolled .nav-right,
+            .sidebar.scrolled .nav-link {
+                color: white;
+            }
+            .nav-right {
+                font-size: 24px;
+                line-height: 24px;
+            }
+            .nav-link {
+                font-size: 21px;
+                line-height: 21px;
+            }
+            .nav-left {
+                gap: 15px;
+                align-items: center;
+            }
+            .main-content {
+                margin-top: 90px;
+            }
+            .container {
+                padding: 0;
+            }
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+                padding: 0;
+            }
+            .nav-link {
+                font-size: 12px;
+            }
+            .back-to-top {
+                bottom: 30px;
+                right: 30px;
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 50px;
+            }
+
+        }
+        @media (max-width: 480px) {
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+                padding: 0;
+            }
+            .modal-content {
+                max-width: 95%;
+                max-height: 95%;
+            }
+            .close {
+                top: 10px;
+                right: 20px;
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="nav-right">
+            LSGT
+        </div>
+        <div class="nav-left">
+            <a href="#" class="nav-link">WORKS</a>
+            <a href="#" class="nav-link" onclick="openContactModal()">CONTACT</a>
+        </div>
+    </aside>
+    <button class="theme-toggle" onclick="toggleTheme()">☯</button>
+    <main class="main-content">
+        <div class="container">
+            <!-- 视频放到最前面 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('Video/1-初零感建模视频.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/1-初零感建模视频.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/2-初氧感（完整版）.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/2-初氧感（完整版）.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/3-光感2.0.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/3-光感2.0.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/4-氧感护理液3x4_1.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/4-氧感护理液3x4_1.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/5-最终版3x4.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/5-最终版3x4.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/7-Mitata-原生系列-竖版-最终.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/7-Mitata-原生系列-竖版-最终.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/8-清感动画3x4.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/8-清感动画3x4.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/9-最终版.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/9-最终版.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/10-爱眼日首屏11.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/10-爱眼日首屏11.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/12-穿越2022（配乐修改1）.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/12-穿越2022（配乐修改1）.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/13-NODE_01.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/13-NODE_01.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <div class="work-item" onclick="openModal('Video/14-Composition 1.mp4', 'video')">
+                    <video class="work-video" autoplay loop muted playsinline preload="metadata" webkit-playsinline muted="muted">
+                        <source src="Video/14-Composition 1.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+            </div>
+            
+            <!-- 文件夹1 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/1/光感.jpg')">
+                    <img src="img/1/光感.jpg" alt="光感" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/1/氧感.jpg')">
+                    <img src="img/1/氧感.jpg" alt="氧感" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/1/清感.jpg')">
+                    <img src="img/1/清感.jpg" alt="清感" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/1/零感.jpg')">
+                    <img src="img/1/零感.jpg" alt="零感" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹2 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/2/拼多多净感护理液2-100.jpg')">
+                    <img src="img/2/拼多多净感护理液2-100.jpg" alt="拼多多净感护理液" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/2/蓝光盾-半年抛1.jpg')">
+                    <img src="img/2/蓝光盾-半年抛1.jpg" alt="蓝光盾半年抛1" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/2/蓝光盾-半年抛3.jpg')">
+                    <img src="img/2/蓝光盾-半年抛3.jpg" alt="蓝光盾半年抛3" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/2/蓝光盾3.jpg')">
+                    <img src="img/2/蓝光盾3.jpg" alt="蓝光盾3" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹3 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/3/香卡场景1.jpg')">
+                    <img src="img/3/香卡场景1.jpg" alt="香卡场景1" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/3/香卡场景2.jpg')">
+                    <img src="img/3/香卡场景2.jpg" alt="香卡场景2" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/3/香卡场景3.jpg')">
+                    <img src="img/3/香卡场景3.jpg" alt="香卡场景3" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/3/香卡场景4.jpg')">
+                    <img src="img/3/香卡场景4.jpg" alt="香卡场景4" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹4 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/4/白色2.jpg')">
+                    <img src="img/4/白色2.jpg" alt="白色2" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/4/粉色.jpg')">
+                    <img src="img/4/粉色.jpg" alt="粉色" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/4/蓝色.jpg')">
+                    <img src="img/4/蓝色.jpg" alt="蓝色" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/4/蓝色2.jpg')">
+                    <img src="img/4/蓝色2.jpg" alt="蓝色2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹5 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/5/小粉片1.jpg')">
+                    <img src="img/5/小粉片1.jpg" alt="小粉片" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/5/抖音护理液-组合.jpg')">
+                    <img src="img/5/抖音护理液-组合.jpg" alt="抖音护理液组合" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/5/海草片1.jpg')">
+                    <img src="img/5/海草片1.jpg" alt="海草片1" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/5/渐进多焦2.jpg')">
+                    <img src="img/5/渐进多焦2.jpg" alt="渐进多焦2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹6 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/6/水晶球1.jpg')">
+                    <img src="img/6/水晶球1.jpg" alt="水晶球" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/6/海洋之心5.jpg')">
+                    <img src="img/6/海洋之心5.jpg" alt="海洋之心" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/6/清感-水动态2.jpg')">
+                    <img src="img/6/清感-水动态2.jpg" alt="清感水动态" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/6/锁水片-38.jpg')">
+                    <img src="img/6/锁水片-38.jpg" alt="锁水片" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹7 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/7/25-零感彩片半年抛-10001.jpg')">
+                    <img src="img/7/25-零感彩片半年抛-10001.jpg" alt="零感彩片半年抛" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/7/4k.jpg')">
+                    <img src="img/7/4k.jpg" alt="4k" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/7/晴天片1.jpg')">
+                    <img src="img/7/晴天片1.jpg" alt="晴天片" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/7/清感主图2.jpg')">
+                    <img src="img/7/清感主图2.jpg" alt="清感主图" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹8 -->
+            <div class="works-grid">
+                <div class="work-item" onclick="openModal('img/8/海报1.jpg')">
+                    <img src="img/8/海报1.jpg" alt="海报1" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/8/清晰2.jpg')">
+                    <img src="img/8/清晰2.jpg" alt="清晰2" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/8/蓝光盾.jpg')">
+                    <img src="img/8/蓝光盾.jpg" alt="蓝光盾" class="work-image">
+                </div>
+                <div class="work-item" onclick="openModal('img/8/防蓝光.jpg')">
+                    <img src="img/8/防蓝光.jpg" alt="防蓝光" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹9 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/9/方案1-1.png')">
+                    <img src="img/9/方案1-1.jpg" alt="方案1-1" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/9/方案1-2.png')">
+                    <img src="img/9/方案1-2.jpg" alt="方案1-2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹10 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/10/场景1.jpg')">
+                    <img src="img/10/场景1.jpg" alt="场景1" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/10/场景2.jpg')">
+                    <img src="img/10/场景2.jpg" alt="场景2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹11 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/11/漱口水合成.jpg')">
+                    <img src="img/11/漱口水合成.jpg" alt="漱口水合成" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/11/爆珠单品.jpg')">
+                    <img src="img/11/爆珠单品.jpg" alt="爆珠单品" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹12 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/12/包装横版.jpg')">
+                    <img src="img/12/包装横版.jpg" alt="包装横版" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/12/爆珠组合2.jpg')">
+                    <img src="img/12/爆珠组合2.jpg" alt="爆珠组合2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹13 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/13/产品图 拷贝.jpg')">
+                    <img src="img/13/产品图 拷贝.jpg" alt="产品图 拷贝" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/13/产品图2.jpg')">
+                    <img src="img/13/产品图2.jpg" alt="产品图2" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹14 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/14/沙漠风格图 (2).jpg')">
+                    <img src="img/14/沙漠风格图 (2).jpg" alt="沙漠风格图 (2)" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/14/沙漠风格图 (4).jpg')">
+                    <img src="img/14/沙漠风格图 (4).jpg" alt="沙漠风格图 (4)" class="work-image">
+                </div>
+            </div>
+            
+            <!-- 文件夹15 -->
+            <div class="works-grid two-columns">
+                <div class="work-item ratio-16-9" onclick="openModal('img/15/kv2复古场景（修改）.jpg')">
+                    <img src="img/15/kv2复古场景（修改）.jpg" alt="kv2复古场景（修改）" class="work-image">
+                </div>
+                <div class="work-item ratio-16-9" onclick="openModal('img/15/场景3 拷贝.jpg')">
+                    <img src="img/15/场景3 拷贝.jpg" alt="场景3 拷贝" class="work-image">
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="modal" id="imageModal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" src="" alt="">
+        </div>
+    </div>
+    <div class="scrollbar">
+        <div class="scrollbar-thumb" id="scrollbarThumb"></div>
+    </div>
+    <!-- Contact Modal -->
+    <div class="contact-modal" id="contactModal">
+        <span class="close" onclick="closeContactModal()">&times;</span>
+        <div class="contact-modal-content">
+            <p>你好，我是蔡俊飞。做了视觉和动态设计4年有余。喜欢摄影，研究技术手搓传统艺能，希望在未来能产出更多有趣的东西！</p>
+            <div class="contact-info">
+                <p>Commissions open/合作请联系</p>
+                <p>Email/邮箱-1098772328@qq.com</p>
+                <p>Wechat/微信-1098772328</p>
+            </div>
+        </div>
+    </div>
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
+    <script>
+        function openModal(src, type = 'image') {
+            const modal = document.getElementById('imageModal');
+            const modalContent = document.querySelector('.modal-content');
+            
+            // 清空内容
+            modalContent.innerHTML = '';
+            
+            if (type === 'video') {
+                // 创建视频容器
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'video-container';
+                
+                // 创建视频元素
+                const video = document.createElement('video');
+                video.className = 'modal-image';
+                video.src = src;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.webkitPlaysInline = true; // 兼容iOS
+                video.preload = 'metadata';
+                
+                // 创建播放暂停图标
+                const playPauseIcon = document.createElement('div');
+                playPauseIcon.className = 'play-pause-icon';
+                playPauseIcon.innerHTML = '⏸️';
+                
+                // 添加到容器
+                videoContainer.appendChild(video);
+                videoContainer.appendChild(playPauseIcon);
+                
+                // 添加点击事件切换播放/暂停
+                videoContainer.addEventListener('click', function() {
+                    if (video.paused) {
+                        video.play().catch(function(error) {
+                            console.log('Error playing video:', error);
+                            // 尝试在用户交互后播放
+                            video.muted = true;
+                            video.play();
+                        });
+                        playPauseIcon.innerHTML = '⏸️';
+                        playPauseIcon.classList.add('show');
+                        setTimeout(() => {
+                            playPauseIcon.classList.remove('show');
+                        }, 1000);
+                    } else {
+                        video.pause();
+                        playPauseIcon.innerHTML = '▶️';
+                        playPauseIcon.classList.add('show');
+                    }
+                });
+                
+                // 视频播放时隐藏图标
+                video.addEventListener('play', function() {
+                    playPauseIcon.classList.remove('show');
+                });
+                
+                // 视频加载时自动播放
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(function(error) {
+                        console.log('Error playing video on load:', error);
+                    });
+                });
+                
+                // 视频加载错误处理
+                video.addEventListener('error', function(e) {
+                    console.log('Video error:', e);
+                    // 显示错误信息
+                    const errorMessage = document.createElement('div');
+                    errorMessage.style.color = 'white';
+                    errorMessage.style.textAlign = 'center';
+                    errorMessage.style.padding = '20px';
+                    errorMessage.textContent = '视频加载失败，请重试';
+                    videoContainer.appendChild(errorMessage);
+                });
+                
+                modalContent.appendChild(videoContainer);
+            } else {
+                // 创建图片元素
+                const img = document.createElement('img');
+                img.id = 'modalImage';
+                img.className = 'modal-image';
+                img.src = src;
+                img.alt = '';
+                modalContent.appendChild(img);
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            const modalContent = document.querySelector('.modal-content');
+            
+            // 移除active类，触发关闭动画
+            modal.classList.remove('active');
+            
+            // 等待动画完成后再清空内容
+            setTimeout(() => {
+                modalContent.innerHTML = '';
+                document.body.style.overflow = 'auto';
+            }, 300); // 与CSS过渡时间一致
+        }
+        
+        // Theme toggle functionality
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+        
+        // Back to top functionality
+        const backToTopButton = document.getElementById('backToTop');
+        const sidebar = document.querySelector('.sidebar');
+        
+        // Smooth scroll with damping effect
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+        
+        function updateScroll() {
+            const currentScrollY = window.scrollY;
+            
+            // Update back to top button visibility
+            if (currentScrollY > 300) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+            
+            // Update sidebar transparency
+            if (currentScrollY > 50) {
+                sidebar.classList.add('scrolled');
+            } else {
+                sidebar.classList.remove('scrolled');
+            }
+            
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+        
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateScroll);
+                ticking = true;
+            }
+        }
+        
+        // 滑块功能
+        const scrollbar = document.querySelector('.scrollbar');
+        const scrollbarThumb = document.getElementById('scrollbarThumb');
+        let isDragging = false;
+        
+        function updateScrollbar() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = scrollTop / docHeight;
+            const thumbHeight = (window.innerHeight / document.documentElement.scrollHeight) * 200;
+            const thumbTop = scrollPercentage * (200 - thumbHeight);
+            
+            scrollbarThumb.style.height = thumbHeight + 'px';
+            scrollbarThumb.style.top = thumbTop + 'px';
+        }
+        
+        function updateScroll() {
+            const currentScrollY = window.scrollY;
+            
+            // Update back to top button visibility
+            if (currentScrollY > 300) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+            
+            // Update sidebar transparency
+            if (currentScrollY > 50) {
+                sidebar.classList.add('scrolled');
+            } else {
+                sidebar.classList.remove('scrolled');
+            }
+            
+            // Update scrollbar
+            updateScrollbar();
+            
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+        
+        // 滑块拖动事件
+        scrollbarThumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            document.body.style.userSelect = 'none';
+        });
+        
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const scrollbarRect = scrollbar.getBoundingClientRect();
+            const scrollbarHeight = scrollbarRect.height;
+            const mouseY = e.clientY - scrollbarRect.top;
+            
+            // 计算拖动位置对应的滚动百分比
+            const scrollPercentage = mouseY / scrollbarHeight;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollTop = scrollPercentage * docHeight;
+            
+            // 平滑滚动到对应位置
+            window.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            });
+        });
+        
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+        
+        window.addEventListener('scroll', requestTick);
+        
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // 初始化滑块位置
+        window.addEventListener('load', updateScrollbar);
+        
+        // Contact Modal functionality
+        function openContactModal() {
+            event.preventDefault(); // 阻止默认链接行为
+            const contactModal = document.getElementById('contactModal');
+            contactModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeContactModal() {
+            const contactModal = document.getElementById('contactModal');
+            contactModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            const contactModal = document.getElementById('contactModal');
+            
+            if (event.target == imageModal) {
+                closeModal();
+            }
+            
+            if (event.target == contactModal) {
+                closeContactModal();
+            }
+        }
+    </script>
+</body>
+</html>
